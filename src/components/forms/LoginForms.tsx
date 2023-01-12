@@ -1,7 +1,9 @@
 import React from "react";
-import Axios, { AxiosResponse } from "axios"
+import { AxiosResponse } from "axios"
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+
+import { useNavigate } from "react-router-dom";
 
 import { login } from "../../services/authService";
 
@@ -20,6 +22,10 @@ const LoginForm = () => {
         email: "",
         password: ""
     }
+
+    let navigate = useNavigate();
+
+
     return (
         <div>
             <h4>Login Form</h4>
@@ -28,15 +34,16 @@ const LoginForm = () => {
                 initialValues={ initialCredential }
                 validationSchema={ loginSchema }
                 onSubmit={ async(values) => {
-                    login(values.email, values.password).then((response: AxiosResponse) => {
+                    login(values.email, values.password).then(async (response: AxiosResponse) => {
                         if (response.status == 200) {
                             if (response.data.token) {
-                                sessionStorage.setItem("sessionJWTToken", response.data.token)
+                                await sessionStorage.setItem("sessionJWTToken", response.data.token);
+                                navigate("/");
                             } else {
-                                throw new Error("Error generating login token")       
+                                throw new Error("Error generating login token");
                             }
                         } else {
-                            throw new Error("Invalid credentials")
+                            throw new Error("Invalid credentials");
                         }
 
                     }).catch((error: any) => {
@@ -77,15 +84,12 @@ const LoginForm = () => {
                             {/* Message if the form is submitting */}
                             {
                                 isSubmitting ? 
-                                (<p>Checking credentials..</p>)
+                                (<p>Checking credentials...</p>)
                                 :null
                             }
                         </Form>
                     )
                 }
-
-            
-
             </Formik>
         </div>
     )
